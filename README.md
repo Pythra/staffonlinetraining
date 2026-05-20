@@ -4,6 +4,8 @@ Learner-facing web app for courses, modules, quizzes, and profile.
 
 ## Local development
 
+Requires **Node.js 22+** (Wrangler 4.93+).
+
 ```bash
 npm ci
 npm run dev
@@ -19,9 +21,8 @@ surge dist crunches-training.surge.sh
 
 ## Cloudflare deploy
 
-See **[DEPLOY.md](./DEPLOY.md)**. Use repo root (this folder) with **Root directory** empty, **Build** `npm run build`, **Deploy** `npx wrangler deploy` — or `npm ci && npm run deploy`.
+See **[DEPLOY.md](./DEPLOY.md)**. Repo root, **Node 22**, deploy: `npm ci && npm run deploy`.
 
 ### Environment variables (build time)
 
 - `VITE_API_BASE_URL` — backend API URL (default: `https://crunches-training.fly.dev`)
-"# staffonlinetraining" 

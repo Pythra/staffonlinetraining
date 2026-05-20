@@ -7,16 +7,18 @@ In **Workers → your project → Settings → Builds**:
 | Setting | Value |
 |--------|--------|
 | **Root directory** | `/` (empty — repo root is the app) |
-| **Node version** | 20 |
+| **Node version** | **22** (required — Wrangler 4.93+ fails on Node 20) |
 | **Install command** | `npm ci` |
 | **Build command** | `npm run build` |
-| **Deploy command** | `npx wrangler deploy` |
+| **Deploy command** | `npm run deploy` |
 
-**Or** one deploy command (if install is skipped):
+**Or** (if install is skipped):
 
 ```bash
 npm ci && npm run deploy
 ```
+
+Cloudflare reads **`.nvmrc`** / **`engines.node`** in `package.json` when auto-detecting Node. If deploy still uses Node 20, set **Node.js version → 22** manually under Builds.
 
 ## Environment
 

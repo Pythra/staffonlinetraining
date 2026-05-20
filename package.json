@@ -3,12 +3,15 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "dev": "vite",
     "build": "vite build && node scripts/remove-dist-redirects.cjs",
     "lint": "eslint .",
     "preview": "vite preview",
-    "deploy": "npm run build && wrangler deploy",
+    "deploy": "npm run build && npx wrangler deploy",
     "surge": "npm run build && surge dist crunches-training.surge.sh"
   },
   "dependencies": {
