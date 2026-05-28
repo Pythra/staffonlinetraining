@@ -10,6 +10,7 @@ export default function Login() {
   const navigate = useNavigate();
   const location = useLocation();
   const from = location.state?.from || '/app/courses';
+  const sessionMessage = location.state?.sessionMessage || '';
 
   useEffect(() => {
     if (!isLoading && token) {
@@ -59,10 +60,24 @@ export default function Login() {
       </Link>
       <div className="screen-pad">
         <img src="/crunches_logo.png" alt="" className="login-logo" width={180} height={120} />
-        <div style={{ marginBottom: 32 }}>
-          <h1 className="screen-title">Crunchies Training</h1>
-          <p className="screen-subtitle">Sign in with your staff ID and password to continue.</p>
-        </div>
+          <div style={{ marginBottom: 32 }}>
+            <h1 className="screen-title">Crunchies Training</h1>
+            <p className="screen-subtitle">Sign in with your staff ID and password to continue.</p>
+            {sessionMessage ? (
+              <p
+                style={{
+                  color: colors.error,
+                  marginTop: 12,
+                  fontSize: 15,
+                  lineHeight: 1.5,
+                  textAlign: 'center',
+                }}
+                role="alert"
+              >
+                {sessionMessage}
+              </p>
+            ) : null}
+          </div>
         <InputField
           label="Staff ID"
           value={staffId}

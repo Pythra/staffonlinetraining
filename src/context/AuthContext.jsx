@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { AuthContext } from './trainingAuthContext';
 
 const API_BASE_URL =
@@ -16,10 +17,40 @@ function readStoredStaff() {
   }
 }
 
+function isSessionInvalidResponse(status, message) {
+  const msg = String(message || '').toLowerCase();
+  if (status === 401) return true;
+  if (status === 404 && msg.includes('staff not found')) return true;
+  return false;
+}
+
 export function AuthProvider({ children }) {
+  const navigate = useNavigate();
   const [token, setToken] = useState('');
   const [staff, setStaff] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  const clearSession = useCallback(() => {
+    setToken('');
+    setStaff(null);
+    localStorage.removeItem(AUTH_TOKEN_KEY);
+    localStorage.removeItem(AUTH_STAFF_KEY);
+  }, []);
+
+  const endSessionAndRedirectToLogin = useCallback(
+    (message) => {
+      clearSession();
+      navigate('/login', {
+        replace: true,
+        state: {
+          sessionMessage:
+            message ||
+            'Your session has ended. Sign in again or contact your admin if your account was removed.',
+        },
+      });
+    },
+    [clearSession, navigate]
+  );
 
   useEffect(() => {
     setToken(localStorage.getItem(AUTH_TOKEN_KEY) || '');
@@ -53,11 +84,17 @@ export function AuthProvider({ children }) {
           (response.status === 503
             ? 'Server is not ready. Email may not be configured yet.'
             : `Request failed (${response.status})`);
+        if (auth && isSessionInvalidResponse(response.status, message)) {
+          endSessionAndRedirectToLogin(message);
+          const err = new Error(message);
+          err.sessionInvalid = true;
+          throw err;
+        }
         throw new Error(message);
       }
       return payload;
     },
-    [token]
+    [token, endSessionAndRedirectToLogin]
   );
 
   const login = useCallback(
@@ -106,11 +143,8 @@ export function AuthProvider({ children }) {
   );
 
   const logout = useCallback(() => {
-    setToken('');
-    setStaff(null);
-    localStorage.removeItem(AUTH_TOKEN_KEY);
-    localStorage.removeItem(AUTH_STAFF_KEY);
-  }, []);
+    clearSession();
+  }, [clearSession]);
 
   const fetchCourses = useCallback(async () => {
     const data = await request('/api/courses');

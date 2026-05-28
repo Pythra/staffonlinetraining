@@ -44,7 +44,8 @@ export default function Courses() {
           }
         }
       } catch (e) {
-        if (active) setError(e.message || 'Failed to load courses');
+        if (!active || e?.sessionInvalid) return;
+        setError(e.message || 'Failed to load courses');
       } finally {
         if (active) setLoading(false);
       }
@@ -65,6 +66,7 @@ export default function Courses() {
         state: { user: staff, course: fullCourse },
       });
     } catch (e) {
+      if (e?.sessionInvalid) return;
       setError(e.message || 'Failed to open course');
     } finally {
       setSelecting(false);
