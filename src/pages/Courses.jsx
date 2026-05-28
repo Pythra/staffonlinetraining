@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import LogoutButton from '../components/LogoutButton';
 import { capitalizeWords } from '../utils/format';
 import { colors } from '../constants/colors';
 import InputField from '../components/InputField';
@@ -106,9 +107,7 @@ export default function Courses() {
 
   return (
     <div className="screen-page">
-      <button type="button" className="logout-corner" onClick={handleLogout} aria-label="Log out">
-        ⎋
-      </button>
+      <LogoutButton onClick={handleLogout} />
       <div className="screen-pad courses-header">
         <div className="courses-icon-circle">🎓</div>
         <h1 className="courses-title">Your assigned courses</h1>

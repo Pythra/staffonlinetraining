@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import LogoutButton from '../components/LogoutButton';
 import { capitalizeWords } from '../utils/format';
 import InputField from '../components/InputField';
 import PrimaryButton from '../components/PrimaryButton';
@@ -102,9 +103,7 @@ export default function Profile() {
           ←
         </button>
         <h1 className="profile-header-title">Profile</h1>
-        <button type="button" className="icon-btn" onClick={handleLogout} aria-label="Log out">
-          ⎋
-        </button>
+        <LogoutButton onClick={handleLogout} className="icon-btn" />
       </header>
       <div className="screen-pad profile-scroll">
         <div className="profile-card">

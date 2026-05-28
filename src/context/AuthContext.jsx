@@ -143,12 +143,8 @@ export function AuthProvider({ children }) {
   );
 
   const getAttempts = useCallback(async () => {
-    try {
-      const data = await request('/api/me/attempts');
-      return data.attempts || [];
-    } catch {
-      return [];
-    }
+    const data = await request('/api/me/attempts');
+    return data.attempts || [];
   }, [request]);
 
   const getProgress = useCallback(async () => {

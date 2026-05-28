@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Link, useNavigate, useParams, useLocation } from 'react-router-dom';
+import { Link, useNavigate, useParams, useLocation, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { colors } from '../constants/colors';
 import { capitalizeWords, formatTimeAgo, getScoreLabel } from '../utils/format';
 import PrimaryButton from '../components/PrimaryButton';
+import LogoutButton from '../components/LogoutButton';
 
 const TABS = [
   { key: 'courses', label: 'My courses' },
@@ -17,6 +18,7 @@ export default function Topics() {
   const { courseCode } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { logout, staff, getAttempts, fetchCourse, sendCourseCertificate } = useAuth();
 
   const user = location.state?.user || staff || {};
@@ -27,9 +29,10 @@ export default function Topics() {
   const [courseError, setCourseError] = useState('');
   const [courseLoading, setCourseLoading] = useState(true);
 
-  const [activeTab, setActiveTab] = useState('courses');
+  const activeTab = searchParams.get('tab') === 'tests' ? 'tests' : 'courses';
   const [attempts, setAttempts] = useState([]);
   const [loadingAttempts, setLoadingAttempts] = useState(true);
+  const [attemptsError, setAttemptsError] = useState('');
   const [downloadingPdf, setDownloadingPdf] = useState(null);
   const [certificateEmailSent, setCertificateEmailSent] = useState(false);
 
@@ -66,11 +69,13 @@ export default function Topics() {
 
   const loadAttempts = useCallback(async () => {
     setLoadingAttempts(true);
+    setAttemptsError('');
     try {
       const list = await getAttempts();
       setAttempts(list || []);
-    } catch {
+    } catch (e) {
       setAttempts([]);
+      setAttemptsError(e.message || 'Failed to load your tests');
     } finally {
       setLoadingAttempts(false);
     }
@@ -79,6 +84,21 @@ export default function Topics() {
   useEffect(() => {
     loadAttempts();
   }, [loadAttempts, courseCode]);
+
+  useEffect(() => {
+    if (activeTab === 'tests') {
+      loadAttempts();
+    }
+  }, [activeTab, loadAttempts]);
+
+  const handleTabChange = (tab) => {
+    if (tab === 'tests') {
+      setSearchParams({ tab: 'tests' }, { replace: true });
+      loadAttempts();
+    } else {
+      setSearchParams({}, { replace: true });
+    }
+  };
 
   useEffect(() => {
     setCertificateEmailSent(false);
@@ -139,6 +159,13 @@ export default function Topics() {
       ),
     [attempts]
   );
+
+  const courseAttempts = useMemo(() => {
+    const code = String(courseCode || '').toUpperCase();
+    return sortedAttempts.filter(
+      (a) => String(a.courseCode || '').toUpperCase() === code
+    );
+  }, [sortedAttempts, courseCode]);
 
   const allCourseSubjectsComplete =
     topics.length > 0 && topics.every((t) => isTopicComplete(t));
@@ -218,9 +245,7 @@ export default function Topics() {
             >
               👤
             </Link>
-            <button type="button" className="topics-icon-btn" onClick={handleLogout} aria-label="Log out">
-              ⎋
-            </button>
+            <LogoutButton onClick={handleLogout} className="topics-icon-btn" />
           </div>
         </div>
         <div className="topics-tabs">
@@ -229,7 +254,7 @@ export default function Topics() {
               key={tab.key}
               type="button"
               className={`topics-tab ${activeTab === tab.key ? 'active' : ''}`}
-              onClick={() => setActiveTab(tab.key)}
+              onClick={() => handleTabChange(tab.key)}
             >
               {tab.label}
               {tab.key === 'tests' && testsTabBadgeCount > 0 ? (
@@ -330,6 +355,11 @@ export default function Topics() {
               <div className="spinner" />
               <p className="muted">Loading your tests…</p>
             </div>
+          ) : attemptsError ? (
+            <div className="tests-error-box">
+              <p style={{ color: colors.error, margin: '0 0 12px' }}>{attemptsError}</p>
+              <PrimaryButton title="Retry" onClick={loadAttempts} style={{ maxWidth: 160 }} />
+            </div>
           ) : (
             <>
               {completedSubjects.length > 0 && (
@@ -354,12 +384,12 @@ export default function Topics() {
               )}
               <div className="tests-section">
                 <h3 className="tests-section-title">Module tests</h3>
-                {sortedAttempts.length === 0 && completedSubjects.length === 0 ? (
+                {courseAttempts.length === 0 && completedSubjects.length === 0 ? (
                   <p className="muted empty-tests">
-                    No test attempts yet. Complete module quizzes to see them here.
+                    No test attempts yet for this course. Complete module quizzes to see them here.
                   </p>
                 ) : (
-                  sortedAttempts.map((a, idx) => (
+                  courseAttempts.map((a, idx) => (
                     <div
                       key={a.id || `${a.moduleKey}_${idx}`}
                       className="attempt-card"
