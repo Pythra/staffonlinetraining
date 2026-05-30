@@ -1,5 +1,6 @@
-import { Navigate, Outlet, useLocation } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import StaffAppLayout from './StaffAppLayout';
 
 export default function RequireAuth() {
   const { token, isLoading } = useAuth();
@@ -17,5 +18,5 @@ export default function RequireAuth() {
     return <Navigate to="/login" replace state={{ from: location.pathname }} />;
   }
 
-  return <Outlet />;
+  return <StaffAppLayout />;
 }

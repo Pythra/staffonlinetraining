@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import LogoutButton from '../components/LogoutButton';
 import { capitalizeWords } from '../utils/format';
@@ -21,6 +21,7 @@ export default function Courses() {
 
   useEffect(() => {
     let active = true;
+    let sessionInvalid = false;
     async function load() {
       setError('');
       try {
@@ -38,16 +39,24 @@ export default function Courses() {
               });
             }
             return;
-          } catch {
+          } catch (e) {
+            if (e?.sessionInvalid) {
+              sessionInvalid = true;
+              return;
+            }
             if (active) setLoading(false);
             return;
           }
         }
       } catch (e) {
-        if (!active || e?.sessionInvalid) return;
+        if (e?.sessionInvalid) {
+          sessionInvalid = true;
+          return;
+        }
+        if (!active) return;
         setError(e.message || 'Failed to load courses');
       } finally {
-        if (active) setLoading(false);
+        if (active && !sessionInvalid) setLoading(false);
       }
     }
     load();
@@ -96,9 +105,7 @@ export default function Courses() {
   if (loading) {
     return (
       <div className="screen-page">
-        <button type="button" className="logout-corner" onClick={handleLogout} aria-label="Log out">
-          ⎋
-        </button>
+        <LogoutButton onClick={handleLogout} />
         <div className="page-center">
           <div className="spinner" />
           <p className="muted">Loading courses…</p>
@@ -118,6 +125,17 @@ export default function Courses() {
       {error ? (
         <div className="error-banner" style={{ margin: '0 6% 12px' }}>
           {error}
+          {String(error).toLowerCase().includes('staff not found') ? (
+            <p style={{ margin: '12px 0 0', textAlign: 'center' }}>
+              <Link
+                to="/"
+                onClick={() => logout()}
+                style={{ color: colors.primary, fontWeight: 600 }}
+              >
+                Return to welcome page
+              </Link>
+            </p>
+          ) : null}
         </div>
       ) : null}
       <div className="screen-pad" style={{ flex: 1, overflow: 'auto' }}>

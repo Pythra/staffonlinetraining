@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { colors } from '../constants/colors';
-import { htmlToPlainText, looksLikeHtml } from '../utils/html';
+import { looksLikeHtml, resolveModuleHtmlForDisplay } from '../utils/html';
 import PrimaryButton from '../components/PrimaryButton';
 
 export default function ModuleContent() {
@@ -169,6 +169,7 @@ export default function ModuleContent() {
   const sections = moduleData?.sections || [];
   const bodyContent = moduleData?.body ?? '';
   const isHtmlBody = looksLikeHtml(bodyContent);
+  const moduleHtml = isHtmlBody ? resolveModuleHtmlForDisplay(bodyContent) : '';
 
   return (
     <div className="screen-page">
@@ -204,16 +205,22 @@ export default function ModuleContent() {
       </div>
       <div className="screen-pad module-content-body" ref={scrollRef}>
         <div
-          className="content-card"
+          className={`content-card${isHtmlBody ? ' module-html-content' : ''}`}
           ref={(el) => {
             sectionRefs.current[0] = el;
           }}
         >
-          <p className="content-text">
-            {isHtmlBody
-              ? htmlToPlainText(bodyContent)
-              : bodyContent || 'No content available for this module yet.'}
-          </p>
+          {isHtmlBody ? (
+            moduleHtml ? (
+              <div dangerouslySetInnerHTML={{ __html: moduleHtml }} />
+            ) : (
+              <p className="content-text">No content available for this module yet.</p>
+            )
+          ) : (
+            <p className="content-text">
+              {bodyContent || 'No content available for this module yet.'}
+            </p>
+          )}
         </div>
         {!isHtmlBody &&
           sections.map((section, index) => (

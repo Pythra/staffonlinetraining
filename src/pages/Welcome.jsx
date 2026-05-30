@@ -1,17 +1,23 @@
 import { useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import PrimaryButton from '../components/PrimaryButton';
 
 export default function Welcome() {
   const { token, isLoading } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const accountNotice =
+    location.state?.message ||
+    (location.state?.accountRemoved
+      ? 'This training account is no longer available. Contact your admin, then sign up or log in again.'
+      : '');
 
   useEffect(() => {
-    if (!isLoading && token) {
+    if (!isLoading && token && !location.state?.accountRemoved) {
       navigate('/app/courses', { replace: true });
     }
-  }, [isLoading, token, navigate]);
+  }, [isLoading, token, navigate, location.state?.accountRemoved]);
 
   if (isLoading) {
     return (
@@ -27,12 +33,17 @@ export default function Welcome() {
         <div className="welcome-inner">
           <img
             src="/crunches_logo.png"
-            alt="Crunchies"
+            alt="Staff Academy"
             className="welcome-logo"
             width={220}
             height={150}
           />
-          <h1 className="welcome-title">Welcome to Training</h1>
+          {accountNotice ? (
+            <p className="welcome-account-notice" role="alert">
+              {accountNotice}
+            </p>
+          ) : null}
+          <h1 className="welcome-title">Welcome to Staff Academy</h1>
           <p className="welcome-subtitle">
             Get all the info about your new job role, complete modules, take tests, and certify your
             knowledge—all in one place.

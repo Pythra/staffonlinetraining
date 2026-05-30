@@ -59,9 +59,9 @@ export default function Login() {
         ←
       </Link>
       <div className="screen-pad">
-        <img src="/crunches_logo.png" alt="" className="login-logo" width={180} height={120} />
+        <img src="/crunches_logo.png" alt="Staff Academy" className="login-logo" width={180} height={120} />
           <div style={{ marginBottom: 32 }}>
-            <h1 className="screen-title">Crunchies Training</h1>
+            <h1 className="screen-title">Staff Academy</h1>
             <p className="screen-subtitle">Sign in with your staff ID and password to continue.</p>
             {sessionMessage ? (
               <p

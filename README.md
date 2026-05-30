@@ -1,4 +1,4 @@
-# Crunchies training website (React + Vite)
+# Staff Academy training website (React + Vite)
 
 Learner-facing web app for courses, modules, quizzes, and profile.
 

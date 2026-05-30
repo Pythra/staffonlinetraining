@@ -20,7 +20,9 @@ function readStoredStaff() {
 function isSessionInvalidResponse(status, message) {
   const msg = String(message || '').toLowerCase();
   if (status === 401) return true;
-  if (status === 404 && msg.includes('staff not found')) return true;
+  if (msg.includes('staff not found')) return true;
+  if (msg.includes('invalid token')) return true;
+  if (status === 403 && msg.includes('staff')) return true;
   return false;
 }
 
@@ -37,15 +39,16 @@ export function AuthProvider({ children }) {
     localStorage.removeItem(AUTH_STAFF_KEY);
   }, []);
 
-  const endSessionAndRedirectToLogin = useCallback(
+  const endSessionAndRedirectToWelcome = useCallback(
     (message) => {
       clearSession();
-      navigate('/login', {
+      navigate('/', {
         replace: true,
         state: {
-          sessionMessage:
+          accountRemoved: true,
+          message:
             message ||
-            'Your session has ended. Sign in again or contact your admin if your account was removed.',
+            'This training account is no longer available. Contact your admin, then sign up or log in again.',
         },
       });
     },
@@ -53,10 +56,58 @@ export function AuthProvider({ children }) {
   );
 
   useEffect(() => {
-    setToken(localStorage.getItem(AUTH_TOKEN_KEY) || '');
+    const storedToken = localStorage.getItem(AUTH_TOKEN_KEY) || '';
+    if (!storedToken) {
+      setIsLoading(false);
+      return;
+    }
+
+    setToken(storedToken);
     setStaff(readStoredStaff());
-    setIsLoading(false);
-  }, []);
+
+    let cancelled = false;
+
+    async function validateStoredSession() {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/courses`, {
+          headers: {
+            Authorization: `Bearer ${storedToken}`,
+            'Content-Type': 'application/json',
+          },
+        });
+        let payload = {};
+        try {
+          payload = await response.json();
+        } catch {
+          payload = {};
+        }
+        if (!response.ok) {
+          const message = payload.message || payload.error || '';
+          if (isSessionInvalidResponse(response.status, message)) {
+            clearSession();
+            navigate('/', {
+              replace: true,
+              state: {
+                accountRemoved: true,
+                message:
+                  message ||
+                  'This training account is no longer available. Contact your admin, then sign up or log in again.',
+              },
+            });
+          }
+        }
+      } catch {
+        /* Network error: keep session; protected pages may retry */
+      } finally {
+        if (!cancelled) setIsLoading(false);
+      }
+    }
+
+    validateStoredSession();
+    return () => {
+      cancelled = true;
+    };
+  }, [clearSession, navigate]);
 
   const request = useCallback(
     async (path, { method = 'GET', body, auth = true } = {}) => {
@@ -85,7 +136,7 @@ export function AuthProvider({ children }) {
             ? 'Server is not ready. Email may not be configured yet.'
             : `Request failed (${response.status})`);
         if (auth && isSessionInvalidResponse(response.status, message)) {
-          endSessionAndRedirectToLogin(message);
+          endSessionAndRedirectToWelcome(message);
           const err = new Error(message);
           err.sessionInvalid = true;
           throw err;
@@ -94,7 +145,7 @@ export function AuthProvider({ children }) {
       }
       return payload;
     },
-    [token, endSessionAndRedirectToLogin]
+    [token, endSessionAndRedirectToWelcome]
   );
 
   const login = useCallback(
