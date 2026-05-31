@@ -172,7 +172,7 @@ export default function ModuleContent() {
   const moduleHtml = isHtmlBody ? resolveModuleHtmlForDisplay(bodyContent) : '';
 
   return (
-    <div className="screen-page">
+    <div className="screen-page module-content-page">
       <button
         type="button"
         className="back-link"

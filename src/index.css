@@ -1747,6 +1747,13 @@ a {
     max-width: 720px;
   }
 
+  /* Keep module reading/typing pages wide on desktop. */
+  .staff-main .module-content-page .screen-pad,
+  .staff-main .module-content-page .module-content-body {
+    max-width: none;
+    width: 100%;
+  }
+
   /* Public auth screens — centered column on desktop */
   .welcome-page,
   .screen-page {
