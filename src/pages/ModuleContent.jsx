@@ -64,6 +64,7 @@ export default function ModuleContent() {
       : routeModule || { key: moduleKey, title: moduleKey };
   const scrollRef = useRef(null);
   const sectionRefs = useRef([]);
+  const moduleHtmlRef = useRef(null);
 
   const [loading, setLoading] = useState(true);
   const [apiError, setApiError] = useState('');
@@ -171,6 +172,42 @@ export default function ModuleContent() {
   const isHtmlBody = looksLikeHtml(bodyContent);
   const moduleHtml = isHtmlBody ? resolveModuleHtmlForDisplay(bodyContent) : '';
 
+  useEffect(() => {
+    if (!isHtmlBody) return;
+    const htmlRoot = moduleHtmlRef.current;
+    if (!htmlRoot) return;
+
+    const anchors = htmlRoot.querySelectorAll('a[href]');
+    anchors.forEach((anchor) => {
+      const href = String(anchor.getAttribute('href') || '').trim();
+      if (!href || !href.includes('/api/module-assets/')) return;
+      if (anchor.closest('.module-file-card')) return;
+
+      const fileName = String(anchor.textContent || '').trim() || 'Attached file';
+      const extMatch = fileName.match(/\.([a-z0-9]{2,8})$/i);
+      const fileType = (extMatch?.[1] || 'file').toUpperCase();
+
+      const card = document.createElement('div');
+      card.className = 'module-file-card';
+
+      const nameEl = document.createElement('div');
+      nameEl.className = 'module-file-name';
+      nameEl.textContent = fileName;
+
+      const downloadLink = document.createElement('a');
+      downloadLink.className = 'module-file-download-btn';
+      downloadLink.href = href;
+      downloadLink.target = '_blank';
+      downloadLink.rel = 'noopener noreferrer';
+      downloadLink.download = fileName;
+      downloadLink.textContent = `Download ${fileType}`;
+
+      card.appendChild(nameEl);
+      card.appendChild(downloadLink);
+      anchor.replaceWith(card);
+    });
+  }, [isHtmlBody, moduleHtml]);
+
   return (
     <div className="screen-page module-content-page">
       <button
@@ -212,7 +249,7 @@ export default function ModuleContent() {
         >
           {isHtmlBody ? (
             moduleHtml ? (
-              <div dangerouslySetInnerHTML={{ __html: moduleHtml }} />
+              <div ref={moduleHtmlRef} dangerouslySetInnerHTML={{ __html: moduleHtml }} />
             ) : (
               <p className="content-text">No content available for this module yet.</p>
             )

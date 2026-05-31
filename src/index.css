@@ -1071,6 +1071,33 @@ a {
   word-break: break-word;
 }
 
+.module-file-card {
+  border: 1px solid #e5e7eb;
+  background: #f9fafb;
+  border-radius: 10px;
+  padding: 12px;
+  margin: 12px 0;
+}
+
+.module-file-name {
+  font-size: 14px;
+  color: #374151;
+  font-weight: 600;
+  word-break: break-word;
+}
+
+.module-file-download-btn {
+  display: inline-flex;
+  margin-top: 10px;
+  background: var(--primary);
+  color: #fff !important;
+  text-decoration: none;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
 .module-html-content p {
   margin: 0 0 12px;
 }
