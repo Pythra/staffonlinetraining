@@ -1049,6 +1049,28 @@ a {
   object-fit: contain;
 }
 
+.module-html-content video {
+  width: 100%;
+  max-width: 100%;
+  display: block;
+  margin: 12px 0;
+  border-radius: 8px;
+  border: 1px solid #eee;
+  background: #111827;
+}
+
+.module-html-content audio {
+  width: 100%;
+  display: block;
+  margin: 12px 0;
+}
+
+.module-html-content a {
+  color: var(--primary-dark);
+  font-weight: 600;
+  word-break: break-word;
+}
+
 .module-html-content p {
   margin: 0 0 12px;
 }

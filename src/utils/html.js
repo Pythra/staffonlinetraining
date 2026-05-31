@@ -28,9 +28,13 @@ export function resolveModuleHtmlForDisplay(html, apiBaseUrl = DEFAULT_API_BASE_
   const trimmed = html.trim();
   if (!trimmed) return '';
 
-  return trimmed.replace(/src=(["'])([^"']+)\1/gi, (_match, quote, src) => {
-    return `src=${quote}${resolveModuleAssetUrl(src, apiBaseUrl)}${quote}`;
-  });
+  return trimmed
+    .replace(/src=(["'])([^"']+)\1/gi, (_match, quote, src) => {
+      return `src=${quote}${resolveModuleAssetUrl(src, apiBaseUrl)}${quote}`;
+    })
+    .replace(/href=(["'])([^"']+)\1/gi, (_match, quote, href) => {
+      return `href=${quote}${resolveModuleAssetUrl(href, apiBaseUrl)}${quote}`;
+    });
 }
 
 export function htmlToPlainText(html) {
